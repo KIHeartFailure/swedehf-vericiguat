@@ -1,0 +1,68 @@
+```{r}
+#| label: outcomesfunc
+#| cache: true
+#| cache.comments: false
+
+outcomesfunc <- function(data = rsdata, time, event, eventname, rep) {
+  out <- data.frame(matrix(NA, ncol = 2, nrow = 1))
+  colnames(out) <- c("outcome", "incidence")
+
+  out[1, 1] <- eventname
+
+  ## incidence rate
+
+  if (!rep) {
+    ev <- data %>%
+      summarise(
+        ev = sum(!!sym(event) == "Yes"),
+        s = sum(!!sym(time) / 365.25)
+      )
+  }
+  if (rep) {
+    ev <- data %>%
+      summarise(
+        ev = sum(!!sym(event)),
+        s = sum(!!sym(time) / 365.25)
+      )
+  }
+
+  r <- pois.exact(x = ev$ev, pt = ev$s / 100)
+
+  out[1, 2] <- paste0(
+    comma(ev$ev), "/ ",
+    fn(ev$s, dig = 0), "/ ",
+    fn(r$rate, dig = 0), " (",
+    fn(r$lower, dig = 0), "-",
+    fn(r$upper, dig = 0), ")"
+  )
+  return(out)
+}
+```
+
+```{r}
+#| label: tbl-outcomes
+#| cache: true
+#| cache.comments: false
+#| dependson: outcomesfunc
+#| tbl-cap: "Association between outcomes and PiPHFrEF"
+
+for (i in seq_along(outvars$var)) {
+  outtmp <- outcomesfunc(
+    time = outvars$time[i],
+    event = outvars$var[i],
+    eventname = outvars$name[i],
+    rep = outvars$rep[i]
+  )
+  if (i == 1) {
+    outall <<- outtmp
+  } else {
+    outall <<- bind_rows(outall, outtmp)
+  }
+}
+
+colnames(outall) <- c("Outcome", "No events / sum py / events/100py (95% CI)")
+
+make_one_xlsxsheet(outall)
+
+default_kable(outall)
+```

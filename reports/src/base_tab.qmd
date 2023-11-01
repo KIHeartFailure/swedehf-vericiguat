@@ -1,0 +1,198 @@
+```{r}
+#| label: tab-base
+#| cache: true
+#| cache.comments: false
+#| tbl-cap: "Baseline characteristics"
+
+basetabfunc_inner <- function(x, data, catdig, contdig) {
+  tmp <- data %>%
+    filter(!is.na(!!sym(x)))
+
+  pmis <- data %>%
+    mutate(mis = factor(if_else(is.na(!!sym(x)), 1, 0), levels = 0:1)) %>%
+    count(mis, .drop = F) %>%
+    mutate(pmis = fn(n / sum(n) * 100, catdig)) %>%
+    filter(mis == "1") %>%
+    pull(pmis)
+
+  cl <- class(data %>% pull(!!sym(x)))
+  if (cl %in% c("character", "factor")) {
+    out <- tmp %>%
+      count(!!sym(x), .drop = F) %>%
+      mutate(
+        out = paste0(comma(n), " (", fn(n / sum(n) * 100, catdig), ")"),
+        out = if_else(n < 10, "<10", out),
+        level = !!sym(x)
+      ) %>%
+      select(out, level)
+
+    # if levels No, Yes only present Yes
+    levs <- out %>% pull(level)
+    nlevs <- length(levs)
+    if (nlevs == 2 & all(levs %in% c("No", "Yes"))) {
+      out <- out %>%
+        filter(level == "Yes") %>%
+        mutate(
+          var = x,
+          pmis = pmis,
+          level = NA
+        )
+    } else {
+      out <- out %>%
+        mutate(
+          var = NA,
+          pmis = NA
+        )
+      out <- out %>% add_row(
+        var = x,
+        pmis = pmis,
+        .before = 1
+      )
+    }
+  } else if (cl %in% c("numeric")) {
+    if (length(contdig) > 1) {
+      if (any(contdig$vars %in% x)) {
+        contdig <- contdig %>%
+          filter(vars == x) %>%
+          pull(contdig)
+      } else {
+        contdig <- 0
+      }
+    }
+    tmp <- data %>%
+      filter(!is.na(!!sym(x)))
+    out <- tmp %>%
+      reframe(
+        med = quantile(!!sym(x), na.rm = T, probs = c(0.5)),
+        q1 = quantile(!!sym(x), na.rm = T, probs = c(0.25)),
+        q3 = quantile(!!sym(x), na.rm = T, probs = c(0.75)),
+        n = n()
+      ) %>%
+      mutate(
+        out = paste0(fn(med, contdig), " [", fn(q1, contdig), "-", fn(q3, contdig), "]"),
+        out = if_else(n < 10, "<10", out)
+      ) %>%
+      select(out)
+
+    out <- out %>%
+      mutate(
+        var = x,
+        pmis = pmis
+      )
+  } else {
+    stop("Unknown class in baseline table")
+  }
+}
+
+# numvarscheck <- rsdata %>%
+#  head(100) %>%
+#  select(!!!syms(tabvars)) %>%
+#  select(where(is.numeric))
+
+contdig <- tibble(vars = c("shf_potassium"), contdig = 1)
+catdig <- 0
+
+tab <- rsdata %>%
+  count() %>%
+  mutate(
+    out = comma(n),
+    var = "N",
+    level = NA,
+    pmis = NA
+  ) %>%
+  select(var, level, pmis, out)
+
+tabtmp <- sapply(tabvars,
+  FUN = basetabfunc_inner, data = rsdata,
+  catdig = catdig, contdig = contdig
+)
+
+tabtmp <- bind_rows(tabtmp)
+tab <- bind_rows(tab, tabtmp)
+
+tab <- tab %>%
+  mutate(
+    # if recoding or categorizing will still get org label
+    var_tmp = str_replace_all(var, "(_cat2|_cat)", ""),
+    # if shf/sos combination  will still get org label
+    var_tmp = str_replace_all(var_tmp, "shf_sos_com_", "sos_com_")
+  )
+
+tab <- left_join(tab,
+  metavars %>%
+    select(variable, label, unit),
+  by = c("var_tmp" = "variable")
+) %>%
+  mutate(
+    Variable = coalesce(label, var_tmp),
+    Variable = if_else(!is.na(unit),
+      paste0(Variable, " (", unit, ")"),
+      Variable
+    ),
+    Variable = if_else(!is.na(level) & !is.na(Variable),
+      paste0(Variable, " ", level),
+      coalesce(Variable, paste0("  ", level))
+    ),
+    # small fixes
+    Variable = str_replace_all(Variable, fixed("Disposable income (100 SEK)"), "Income")
+  )
+
+cn <- c("Variable", c("Missing (%)", "Overall"))
+# excel
+tab_xls <- tab %>%
+  mutate(
+    footnote1 = if_else(!is.na(var) & var %in% "shf_quadruple", "*", "")
+  ) %>%
+  unite(footnote, starts_with("footnote"), sep = "") %>%
+  mutate(Variable = paste0(Variable, footnote)) %>%
+  select(Variable, pmis, out)
+tab_xls <- tab_xls %>%
+  add_row(Variable = "*Only registrations after 1 November 2020.")
+
+make_one_xlsxsheet(tab_xls, colnames = cn)
+
+# footnotes
+tab <- tab %>%
+  mutate(
+    footnote1s = if_else(!is.na(var) & var %in% "shf_quadruple", footnote_marker_symbol(1), "")
+  ) %>%
+  unite(footnote, starts_with("footnote"), sep = "") %>%
+  mutate(
+    # so no probs
+    Variable = sanitize_text(Variable),
+    Variable = paste0(Variable, footnote),
+    Variable = str_replace_all(Variable, fixed("²"), "\\textsuperscript{2}"),
+    Variable = str_replace_all(Variable, fixed("$>$="), "$\\geq$"),
+    Variable = str_replace_all(Variable, fixed("$<$="), "$\\leq$")
+  ) %>%
+  select(Variable, pmis, out)
+
+indent_rows <- tab %>%
+  mutate(
+    indent_rows = str_detect(Variable, "  "),
+    rows = row_number()
+  ) %>%
+  filter(indent_rows) %>%
+  pull(rows)
+
+cn <- sanitize_text(cn)
+
+default_kable(tab,
+  font_size = 10,
+  longtable = TRUE,
+  escape = FALSE,
+  col.names = cn
+) %>%
+  add_indent(indent_rows) %>%
+  footnote(
+    footnote_order = c("general", "symbol", "alphabet"),
+    general_title = "",
+    general = c(
+      "Categorical variables are presented with n (%) and tested with chi-square test and continuous variables with median [q1-q3] and tested with Mann-Whitney U test."
+    ),
+    symbol = c(
+      "Only registrations after 1 November 2020."
+    ),
+    threeparttable = T
+  )
+```
