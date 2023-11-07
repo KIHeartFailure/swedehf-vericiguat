@@ -1,0 +1,259 @@
+```{r}
+#| label: kmfunc
+#| cache: true
+#| cache.comments: false
+
+kmfunc <- function(repdata = rsdatarep, time, event, eventname, rep, ymax = 1.5) {
+  if (!rep) {
+    fit <- survfit(formula(paste0("Surv(", time, ",", event, "== 'Yes') ~ 1")),
+      data = rsdata
+    )
+
+    s <- summary(fit, times = seq(0, global_followup * 365.25, 1), extend = T)
+
+    plot_data <- tibble(
+      "time" = s$time,
+      "n.risk" = s$n.risk,
+      "n.event" = s$n.event,
+      "n.censor" = s$n.censor,
+      "estimate" = 1 - s$surv
+    )
+
+    ylim <- c(0, 1)
+    ylab <- paste0(eventname, " (%)")
+  }
+
+  if (rep) {
+    fit <- mcf(formula(paste0("Recur(sos_outtime, lopnr, sos_out == 'Yes') ~ 1")), data = repdata)
+
+    plot_data <- tibble(
+      "time" = fit@MCF$time,
+      "n.risk" = fit@MCF$numRisk,
+      "estimate" = fit@MCF$MCF,
+      "std.error" = fit@MCF$se
+    )
+    ylim <- c(0, ymax)
+    ylab <- paste0("Cum mean ", eventname, " (/100 pats)")
+  }
+
+  annotate_data <- plot_data %>%
+    filter(time <= 2 * 365) %>%
+    slice(n()) %>%
+    ungroup()
+
+  p <- ggplot(plot_data, aes(x = time / 365, y = estimate)) +
+    geom_step(linewidth = 1, col = "blue") +
+    # scale_x_continuous(breaks = seq(0, endfollow, 1), limits = c(0, endfollow), expand = c(0, 0)) +
+    # scale_y_continuous(labels = scales::label_percent(suffix = ""), limits = c(0, 1), expand = c(0, 0)) +
+    scale_x_continuous(breaks = seq(0, global_followup, 1), limits = c(0, global_followup)) +
+    scale_y_continuous(labels = scales::label_percent(suffix = ""), limits = ylim) +
+    theme_classic() +
+    theme(
+      text = element_text(size = 20),
+      legend.position = "none"
+    ) +
+    labs(x = "Follow-up (years)", y = ylab)
+
+  if (!rep) {
+    # n at risk
+    table_data <- plot_data %>%
+      filter(
+        time %in% c(seq(0, global_followup, 1) * 365)
+      ) %>%
+      mutate(strata = "No. at risk")
+  }
+  if (rep) {
+    # n at risk
+    # needed for n at risk
+    fitn <- survfit(formula(paste0("Surv(sos_outtime_death, sos_out_death == 'Yes') ~ 1")),
+      data = rsdata
+    )
+    sn <- summary(fitn, times = seq(0, global_followup * 365, 1), extend = T)
+
+    table_data <- tibble(
+      "time" = sn$time,
+      "n.risk" = sn$n.risk,
+      strata = "No. at risk"
+    ) %>%
+      filter(
+        time %in% c(seq(0, global_followup, 1) * 365)
+      )
+  }
+
+  t <- ggplot(table_data, aes(y = strata, x = time / 365)) +
+    geom_text(aes(label = comma(n.risk)), size = 6) +
+    # scale_x_continuous(breaks = seq(0, endfollow, 1), limits = c(0, endfollow), expand = c(0, 0)) +
+    # scale_y_discrete(expand = c(0, 0)) +
+    scale_x_continuous(breaks = seq(0, global_followup, 1), limits = c(0, global_followup)) +
+    coord_cartesian(xlim = c(0, global_followup), clip = "off") +
+    theme(
+      plot.caption = element_blank(),
+      panel.background = element_blank(),
+      text = element_text(size = 20),
+      axis.text.x = element_blank(),
+      axis.ticks = element_blank(),
+      axis.title = element_blank(),
+      # plot.margin = unit(c(0, 1, 0, 3), "cm"), # trouble
+      # axis.text.y = element_blank()
+      # axis.text.y = element_text(margin = margin(0, 0, 0, 100))
+      axis.text.y = element_text(hjust = 0, colour = "black")
+    )
+
+  km <- (p / t) + plot_layout(height = c(1, .25))
+  km
+}
+```
+
+```{r}
+#| label: fig-cicmcf-1
+#| cache: true
+#| cache.comments: false
+#| dependson: kmfunc
+#| fig-cap: "Cumulative incidence/Mean cumulative function"
+#| fig-subcap: !expr outvars$name[1:6]
+#| layout-ncol: 2
+#| layout-nrow: 3
+#| fig-height: 6
+#| fig-width: 8
+
+kmfunc(
+  time = outvars$time[1],
+  event = outvars$var[1],
+  eventname = outvars$shortname[1],
+  rep = outvars$rep[1]
+)
+kmfunc(
+  time = outvars$time[2],
+  event = outvars$var[2],
+  eventname = outvars$shortname[2],
+  rep = outvars$rep[2]
+)
+kmfunc(
+  time = outvars$time[3],
+  event = outvars$var[3],
+  eventname = outvars$shortname[3],
+  rep = outvars$rep[3]
+)
+kmfunc(
+  time = outvars$time[4],
+  event = outvars$var[4],
+  eventname = outvars$shortname[4],
+  rep = outvars$rep[4]
+)
+kmfunc(
+  time = outvars$time[5],
+  event = outvars$var[5],
+  eventname = outvars$shortname[5],
+  rep = outvars$rep[5]
+)
+kmfunc(
+  time = outvars$time[6],
+  event = outvars$var[6],
+  eventname = outvars$shortname[6],
+  rep = outvars$rep[6]
+)
+```
+
+
+```{r}
+#| label: fig-cicmcf-2
+#| cache: true
+#| cache.comments: false
+#| dependson: kmfunc
+#| fig-cap: "Cumulative incidence/Mean cumulative function"
+#| fig-subcap: !expr outvars$name[7:12]
+#| layout-ncol: 2
+#| layout-nrow: 3
+#| fig-height: 6
+#| fig-width: 8
+
+kmfunc(
+  time = outvars$time[7],
+  event = outvars$var[7],
+  eventname = outvars$shortname[7],
+  rep = outvars$rep[7]
+)
+kmfunc(
+  time = outvars$time[8],
+  event = outvars$var[8],
+  eventname = outvars$shortname[8],
+  rep = outvars$rep[8]
+)
+kmfunc(
+  time = outvars$time[9],
+  event = outvars$var[9],
+  eventname = outvars$shortname[9],
+  rep = outvars$rep[9]
+)
+kmfunc(
+  time = outvars$time[10],
+  event = outvars$var[10],
+  eventname = outvars$shortname[10],
+  rep = outvars$rep[10]
+)
+kmfunc(
+  time = outvars$time[11],
+  event = outvars$var[11],
+  eventname = outvars$shortname[11],
+  rep = outvars$rep[11]
+)
+kmfunc(
+  time = outvars$time[12],
+  event = outvars$var[12],
+  eventname = outvars$shortname[12],
+  rep = outvars$rep[12]
+)
+```
+
+```{r}
+#| label: fig-cicmcf-3
+#| cache: true
+#| cache.comments: false
+#| dependson: kmfunc
+#| fig-cap: "Cumulative incidence/Mean cumulative function"
+#| fig-subcap: !expr outvars$name[13:17]
+#| layout-ncol: 2
+#| layout-nrow: 3
+#| fig-height: 6
+#| fig-width: 8
+
+kmfunc(
+  time = outvars$time[13],
+  event = outvars$var[13],
+  eventname = outvars$shortname[13],
+  rep = outvars$rep[13]
+)
+kmfunc(
+  time = outvars$time[14],
+  event = outvars$var[14],
+  eventname = outvars$shortname[14],
+  rep = outvars$rep[14],
+  repdata = rsdatarephosphf,
+  ymax = 2
+)
+kmfunc(
+  time = outvars$time[15],
+  event = outvars$var[15],
+  eventname = outvars$shortname[15],
+  rep = outvars$rep[15],
+  repdata = rsdatarephospany,
+  ymax = 5
+)
+kmfunc(
+  time = outvars$time[16],
+  event = outvars$var[16],
+  eventname = outvars$shortname[16],
+  rep = outvars$rep[16],
+  repdata = rsdatarepvisit,
+  ymax = 20
+)
+kmfunc(
+  time = outvars$time[17],
+  event = outvars$var[17],
+  eventname = outvars$shortname[17],
+  rep = outvars$rep[17],
+  repdata = rsdatarepervisit,
+  ymax = 2
+)
+```
+

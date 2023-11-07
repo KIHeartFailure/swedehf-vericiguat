@@ -1,3 +1,15 @@
+# Cut outcomes at 5 years
+
+rsdata <- cut_surv(rsdata, sos_out_deathcvhosphf, sos_outtime_hosphf, global_followup * 365.25, cuttime = FALSE, censval = "No")
+rsdata <- cut_surv(rsdata, sos_out_deathhosphf, sos_outtime_hosphf, global_followup * 365.25, cuttime = FALSE, censval = "No")
+rsdata <- cut_surv(rsdata, sos_out_hosphf, sos_outtime_hosphf, global_followup * 365.25, cuttime = TRUE, censval = "No")
+rsdata <- cut_surv(rsdata, sos_out_hospany, sos_outtime_hospany, global_followup * 365.25, cuttime = TRUE, censval = "No")
+rsdata <- cut_surv(rsdata, sos_out_hospcv, sos_outtime_hospcv, global_followup * 365.25, cuttime = TRUE, censval = "No")
+rsdata <- cut_surv(rsdata, sos_out_hospnoncv, sos_outtime_hospnoncv, global_followup * 365.25, cuttime = TRUE, censval = "No")
+rsdata <- cut_surv(rsdata, sos_out_deathcv, sos_outtime_death, global_followup * 365.25, cuttime = FALSE, censval = "No")
+rsdata <- cut_surv(rsdata, sos_out_deathnoncv, sos_outtime_death, global_followup * 365.25, cuttime = FALSE, censval = "No")
+rsdata <- cut_surv(rsdata, sos_out_death, sos_outtime_death, global_followup * 365.25, cuttime = TRUE, censval = "No")
+
 asnum <- function(x) {
   x <- if_else(x == "Yes", 1, 0)
 }
@@ -5,6 +17,7 @@ asnum <- function(x) {
 rsdata <- rsdata %>%
   mutate(nmed = rowSums(across(c("shf_rasiarni", "shf_bbl", "shf_mra", "shf_sglt2"), asnum))) %>%
   mutate(
+    shf_ef = droplevels(shf_ef),
     shf_age_cat = factor(
       case_when(
         shf_age < 80 ~ 1,
@@ -21,9 +34,10 @@ rsdata <- rsdata %>%
     shf_bpsys_cat = factor(
       case_when(
         shf_bpsys < 100 ~ 1,
-        shf_age >= 100 ~ 2
+        shf_bpsys < 140 ~ 2,
+        shf_bpsys >= 140 ~ 3
       ),
-      levels = 1:2, labels = c("<100", ">=100")
+      levels = 1:3, labels = c("<100", "100-139", ">=140")
     ),
     shf_sos_com_metabolic_syndrome = factor(case_when(
       sos_com_hyperlipidemia == "Yes" &
@@ -54,9 +68,10 @@ rsdata <- rsdata %>%
         "No ACEi/ARB/ARNi, Beta-blocker, MRA"
       )
     ),
+    shf_sglt2 = if_else(shf_indexdtm < ymd("2020-11-01"), NA, shf_sglt2),
     shf_quadruple = factor(
       case_when(
-        is.na(shf_rasiarni) | is.na(shf_bbl) | is.na(shf_mra) | is.na(shf_sglt2) | shf_indexdtm < ymd("2020-11-01") ~ NA_real_,
+        is.na(shf_rasiarni) | is.na(shf_bbl) | is.na(shf_mra) | is.na(shf_sglt2) ~ NA_real_,
         shf_rasiarni == "Yes" & shf_bbl == "Yes" & shf_mra == "Yes" & shf_sglt2 == "Yes" ~ 1,
         shf_rasiarni == "Yes" & shf_bbl == "Yes" & shf_mra == "Yes" & shf_sglt2 == "No" ~ 2,
         shf_rasiarni == "Yes" & shf_bbl == "Yes" & shf_mra == "No" & shf_sglt2 == "Yes" ~ 3,

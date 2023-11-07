@@ -128,15 +128,9 @@ continuous variables are presented with median [first quartile-third quartile]
 
 The following outcomes are considered: `r paste0(outvars$name, collapse = ", ")`
 
-Number of events, person-years and the incidence rate (96% CI) are presented. 
+Number of events, person-years and the incidence rate (95% CI) are presented. 
 
-Data were censored at 2021-12-31, emigration from Sweden or, when it was itself not an event, death. 
-
-QUESTION: Should cut the time at for example 5 years or want all fu time?
-
-QUESTION: Should "First acute kidney injury", "First hyperkalemia", "First syncope", "First stroke", be hospitalizations or also out-patient care. Risk is that if NOT hospitalization will not be new (or worsening) event. Should be total (repeated) or first?
-
-QUESTION: acute kidney injury is that : ICD:N17-9, KAS00, KAS10, KAS20, Z491, Z492 OP:DR014, DR015, DR016, DR020, DR012, DR013, DR023, DR024, TJA33, TJA35?
+Data were censored at `r global_followup` years, 2021-12-31, emigration from Sweden or, when it was itself not an event, death. 
 
 \clearpage
 
@@ -145,12 +139,6 @@ QUESTION: acute kidney injury is that : ICD:N17-9, KAS00, KAS10, KAS20, Z491, Z4
 ## Baseline characteristics
 
 {{< include src/base_tab.qmd >}}
-
-QUESTION: Hypertension is defined from ICD code wheras Hypotension is defined from sys bp. Should do in similar way?
-
-QUESTION: Need icd codes for Hypothyroidism, Hyperthyroidism
-
-QUESTION: How define Other CV disease?
 
 ## Outcomes
 
@@ -173,8 +161,7 @@ The median (min-max) follow-up is
 `r medsurv` years for a total of `r sumsurv` patient-years of follow-up.
 
 {{< include src/outcomes.qmd >}}
-
-QUESTION: Do you want km curves or similar?
+{{< include src/km_figs.qmd >}}
 
 \clearpage
 
@@ -188,12 +175,9 @@ sessionInfo()
 
 ## R code
 
-The R code for all data handling and statistical analyses are found: 
+The R code for the data handling and statistical analyses are found: 
 
-https://github.com/KIHeartFailure/swedehf-vericiguat. On publication
-the repository will be made public so as to 
-link to it from the resulting article for increased transparency and code sharing.
-No data or output is stored in the repository. 
+https://github.com/KIHeartFailure/swedehf-vericiguat. 
 
 # References
 

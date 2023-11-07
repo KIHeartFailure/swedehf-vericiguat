@@ -13,10 +13,8 @@ tabvars <- c(
   "shf_followuplocation_cat",
 
   # clinical factors and lab measurements
-  "shf_durationhf",
   "shf_ef",
   "shf_nyha",
-  "shf_killip",
   "shf_bmi",
   "shf_bmi_cat",
   "shf_bpsys",
@@ -64,6 +62,7 @@ tabvars <- c(
   "sos_com_cancer3y",
   "sos_com_copd",
   "sos_com_sleepapnea",
+  "sos_com_thyroidism",
   "sos_com_hyperkalemia",
   "sos_com_hyperlipidemia",
   "shf_sos_com_metabolic_syndrome",
@@ -84,20 +83,26 @@ outvars <- tibble(
   var = c(
     "sos_out_death", "sos_out_deathcv", "sos_out_deathnoncv", "sos_out_hospany", "sos_out_hospcv",
     "sos_out_hospnoncv", "sos_out_hosphf", "sos_out_deathcvhosphf", "sos_out_deathhosphf",
-    "sos_out_hosprenal", "sos_out_hosphyperkalemia", "sos_out_hospsyncope", "sos_out_hospstroke",
+    "sos_out_renal", "sos_out_hyperkalemia", "sos_out_syncope", "sos_out_stroke",
     "sos_out_counthosphf", "sos_out_counthospany", "sos_out_countvisit", "sos_out_countervisit"
   ),
   time = c(
     "sos_outtime_death", "sos_outtime_death", "sos_outtime_death", "sos_outtime_hospany", "sos_outtime_hospcv",
     "sos_outtime_hospnoncv", "sos_outtime_hosphf", "sos_outtime_hosphf", "sos_outtime_hosphf",
-    "sos_outtime_hosprenal", "sos_outtime_hosphyperkalemia", "sos_outtime_hospsyncope", "sos_outtime_hospstroke",
+    "sos_outtime_renal", "sos_outtime_hyperkalemia", "sos_outtime_syncope", "sos_outtime_stroke",
     "sos_outtime_death", "sos_outtime_death", "sos_outtime_death", "sos_outtime_death"
   ),
   name = c(
     "All-cause death", "CV death", "Non-CV death", "First All-cause hospitalization", "First CV hospitalization",
     "First Non-CV hospitalization", "First HF hospitalization", "CV death/First HF hospitalization", "All-cause death/First HF hospitalization",
-    "First Acute kidney injury hospitalization", "First Hyperkalemia hospitalization", "First Syncope hospitalization", "First Stroke hospitalization",
-    "Total HF hospitalization", "Total All-cause hospitalization", "Total All-cause outpatient visit (specilized care)", "Total A&E visit"
+    "First Renal failure", "First Hyperkalemia", "First Syncope", "First Stroke",
+    "Total HF hospitalization", "Total All-cause hospitalization", "Total All-cause outpatient visit", "Total A&E visit"
+  ),
+  shortname = c(
+    "ACD", "CVD", "Non-CVD", "ACH", "CVH",
+    "Non-CVH", "HFH", "CVD/HFH", "ACD/HFH",
+    "Renal failure", "Hyperkalemia", "Syncope", "Stroke",
+    "HFH", "ACH", "ACV", "A&E"
   )
 ) %>%
   mutate(
@@ -114,12 +119,14 @@ metavars <- bind_rows(
     variable = c(
       "sos_com_metabolic_syndrome",
       "sos_com_hyperlipidemia",
+      "sos_com_thyroidism",
       "shf_trippel",
       "shf_quadruple"
     ),
     label = c(
       "Metabolic syndrome (hyperlipidemia & hypertension & diabetes)",
       "Hyperlipidemia",
+      "Thyroidism",
       "Tripple therapy",
       "Quadruple therapy"
     )

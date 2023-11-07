@@ -17,6 +17,7 @@ source(here("munge/01-vars.R"))
 source(here("munge/02-pop-selection.R"))
 source(here("munge/03-npr-comorb-outcome.R"))
 source(here("munge/04-fix-vars.R"))
+source(here("munge/05-npr-rep-outcome.R"))
 
 # Cache/save data ---------------------------------------------------------
 
@@ -24,6 +25,10 @@ save(
   file = here("data/clean-data/data.RData"),
   list = c(
     "rsdata",
+    "rsdatarephosphf",
+    "rsdatarephospany",
+    "rsdatarepvisit",
+    "rsdatarepervisit",
     "flow",
     "tabvars",
     "outvars",

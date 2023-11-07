@@ -44,7 +44,7 @@ outcomesfunc <- function(data = rsdata, time, event, eventname, rep) {
 #| cache: true
 #| cache.comments: false
 #| dependson: outcomesfunc
-#| tbl-cap: "Association between outcomes and PiPHFrEF"
+#| tbl-cap: "Outcomes during follow-up"
 
 for (i in seq_along(outvars$var)) {
   outtmp <- outcomesfunc(
@@ -64,5 +64,7 @@ colnames(outall) <- c("Outcome", "No events / sum py / events/100py (95% CI)")
 
 make_one_xlsxsheet(outall)
 
-default_kable(outall)
+default_kable(outall,
+  align = c("l", rep("c", ncol(outall) - 1)),
+)
 ```

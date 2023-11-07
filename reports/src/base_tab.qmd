@@ -137,26 +137,37 @@ tab <- left_join(tab,
     Variable = str_replace_all(Variable, fixed("Disposable income (100 SEK)"), "Income")
   )
 
+# footnotes
+tab <- tab %>%
+  mutate(
+    footnote1 = if_else(!is.na(var) & var %in% c("shf_potassium_cat", "shf_potassium"), footnote_marker_alphabet(1, format = "latex"), ""),
+    footnote2 = if_else(!is.na(var) & var %in% c("shf_quadruple", "shf_sglt2"), footnote_marker_alphabet(2, format = "latex"), "")
+  ) %>%
+  unite(footnote, starts_with("footnote"), sep = "")
+
+footnotetext <- c(
+  "Patients from 2006.",
+  "Patients from 28 April 2021."
+)
+
 cn <- c("Variable", c("Missing (%)", "Overall"))
+
 # excel
 tab_xls <- tab %>%
   mutate(
-    footnote1 = if_else(!is.na(var) & var %in% "shf_quadruple", "*", "")
+    Variable = paste0(Variable, footnote),
+    Variable = str_remove_all(Variable, "textsuperscript|\\}|\\{"),
+    Variable = str_replace_all(Variable, "\\\\", " ")
   ) %>%
-  unite(footnote, starts_with("footnote"), sep = "") %>%
-  mutate(Variable = paste0(Variable, footnote)) %>%
-  select(Variable, pmis, out)
-tab_xls <- tab_xls %>%
-  add_row(Variable = "*Only registrations after 1 November 2020.")
+  select(Variable, pmis, out) %>%
+  add_row(Variable = "") %>%
+  add_row(Variable = paste0("a ", footnotetext[1])) %>%
+  add_row(Variable = paste0("b ", footnotetext[2]))
 
 make_one_xlsxsheet(tab_xls, colnames = cn)
 
 # footnotes
 tab <- tab %>%
-  mutate(
-    footnote1s = if_else(!is.na(var) & var %in% "shf_quadruple", footnote_marker_symbol(1), "")
-  ) %>%
-  unite(footnote, starts_with("footnote"), sep = "") %>%
   mutate(
     # so no probs
     Variable = sanitize_text(Variable),
@@ -178,6 +189,7 @@ indent_rows <- tab %>%
 cn <- sanitize_text(cn)
 
 default_kable(tab,
+  align = c("l", rep("c", ncol(tab) - 1)),
   font_size = 10,
   longtable = TRUE,
   escape = FALSE,
@@ -188,11 +200,9 @@ default_kable(tab,
     footnote_order = c("general", "symbol", "alphabet"),
     general_title = "",
     general = c(
-      "Categorical variables are presented with n (%) and tested with chi-square test and continuous variables with median [q1-q3] and tested with Mann-Whitney U test."
+      "Categorical variables are presented with n (%) and continuous variables with median [q1-q3]."
     ),
-    symbol = c(
-      "Only registrations after 1 November 2020."
-    ),
+    alphabet = footnotetext,
     threeparttable = T
   )
 ```
