@@ -21,7 +21,9 @@ library(ggplot2)
 library(gridExtra)
 library(ggrepel)
 library(scales)
+library(patchwork)
 
 # outcomes
 library(epitools)
 library(reda) # for MCF (repeated events)
+library(survival)

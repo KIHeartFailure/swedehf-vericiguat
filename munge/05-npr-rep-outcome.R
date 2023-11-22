@@ -35,15 +35,10 @@ repoutfunc <- function(data, icd) {
     arrange(desc(sos_out)) %>%
     slice(1) %>%
     ungroup() %>%
-    arrange(lopnr, shf_indexdtm)
-
-  rsdatarep <- rsdatarep %>%
-    group_by(lopnr) %>%
-    arrange(shf_indexdtm) %>%
+    arrange(lopnr, shf_indexdtm) %>%
     mutate(
       extra = 0
-    ) %>%
-    ungroup()
+    )
 
   extrarsdatarep <- rsdatarep %>%
     group_by(lopnr) %>%

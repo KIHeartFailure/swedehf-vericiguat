@@ -17,6 +17,7 @@ asnum <- function(x) {
 rsdata <- rsdata %>%
   mutate(nmed = rowSums(across(c("shf_rasiarni", "shf_bbl", "shf_mra", "shf_sglt2"), asnum))) %>%
   mutate(
+    censdtm = pmin(censdtm, shf_indexdtm + global_followup * 365.25, na.rm = T),
     shf_ef = droplevels(shf_ef),
     shf_age_cat = factor(
       case_when(

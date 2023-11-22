@@ -25,7 +25,7 @@ rsdata <- rsdata %>%
 flow <- rbind(flow, c("Include posts with NYHA II-IV", nrow(rsdata)))
 
 rsdata <- rsdata %>%
-  filter(sos_location == "Out-patient" & (is.na(sos_timeprevhosphf) | sos_timeprevhosphf > 365 / 2))
+  filter(shf_location == "Out-patient" & (is.na(sos_timeprevhosphf) | sos_timeprevhosphf > 365 / 2))
 flow <- rbind(flow, c("Include posts without a previous HFH within 6 months", nrow(rsdata)))
 
 rsdata <- rsdata %>%

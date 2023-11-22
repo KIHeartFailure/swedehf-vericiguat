@@ -3,7 +3,7 @@
 #| cache: true
 #| cache.comments: false
 
-kmfunc <- function(repdata = rsdatarep, time, event, eventname, rep, ymax = 1.5) {
+kmfunc <- function(repdata = NULL, time, event, eventname, rep, ymax = 1.5) {
   if (!rep) {
     fit <- survfit(formula(paste0("Surv(", time, ",", event, "== 'Yes') ~ 1")),
       data = rsdata
@@ -109,7 +109,7 @@ kmfunc <- function(repdata = rsdatarep, time, event, eventname, rep, ymax = 1.5)
 #| cache: true
 #| cache.comments: false
 #| dependson: kmfunc
-#| fig-cap: "Cumulative incidence/Mean cumulative function"
+#| fig-cap: "Cumulative incidence/Mean cumulative function I"
 #| fig-subcap: !expr outvars$name[1:6]
 #| layout-ncol: 2
 #| layout-nrow: 3
@@ -160,7 +160,7 @@ kmfunc(
 #| cache: true
 #| cache.comments: false
 #| dependson: kmfunc
-#| fig-cap: "Cumulative incidence/Mean cumulative function"
+#| fig-cap: "Cumulative incidence/Mean cumulative function II"
 #| fig-subcap: !expr outvars$name[7:12]
 #| layout-ncol: 2
 #| layout-nrow: 3
@@ -210,7 +210,7 @@ kmfunc(
 #| cache: true
 #| cache.comments: false
 #| dependson: kmfunc
-#| fig-cap: "Cumulative incidence/Mean cumulative function"
+#| fig-cap: "Cumulative incidence/Mean cumulative function III"
 #| fig-subcap: !expr outvars$name[13:17]
 #| layout-ncol: 2
 #| layout-nrow: 3

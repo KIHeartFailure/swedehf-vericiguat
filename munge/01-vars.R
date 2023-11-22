@@ -8,7 +8,6 @@ tabvars <- c(
   "shf_age_cat",
 
   # organizational
-  "shf_location",
   "shf_followuphfunit",
   "shf_followuplocation_cat",
 

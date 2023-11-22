@@ -190,7 +190,7 @@ cn <- sanitize_text(cn)
 
 default_kable(tab,
   align = c("l", rep("c", ncol(tab) - 1)),
-  font_size = 10,
+  font_size = 8,
   longtable = TRUE,
   escape = FALSE,
   col.names = cn

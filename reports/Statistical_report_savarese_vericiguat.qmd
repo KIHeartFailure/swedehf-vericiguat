@@ -1,6 +1,5 @@
 ---
 title: "Statistical report: Eligibility for Vericiguat in realworld heart failure patients with non-worsening HFrEF"
-subtitle: "Draft"
 date: "`r Sys.Date()`"
 cover: static/ki_logo_vert_rgb.png
 editor: source
@@ -15,7 +14,7 @@ format:
     toc: true
     toc-depth: 3
     toc-title: Contents
-    lof: false
+    lof: true
     lot: true
     cap-location: top
     number-sections: true
@@ -64,7 +63,7 @@ sheets <- names(wb)
 
 ## Data sources
 
-The Swedish Heart Failure Registry (SwedeHF) is a nationwide quality registry started in 2000, 
+The Swedish Heart Failure Registry (SwedeHF) is an ongoing nationwide quality registry started in 2000, 
 that includes in- and out-hospital patients with HF, regardless of EF and previous history of HF[@swedehf]. 
 Around 80 variables are recorded at 
 discharge from hospital or at the outpatient visit, i.e. index date, and 
@@ -72,7 +71,6 @@ entered into an electronic database managed by the Uppsala Clinical Research
 Center (Uppsala, Sweden). Up to April 2017 the only inclusion criterion was a 
 clinical diagnosis of HF, which was thereafter defined according to the ICD-10 
 codes I50.0, I50.1, I50.9, I42.0, I42.6, I42.7, I25.5, I11.0, I13.0, I13.2. 
-Informed consent is not required, although patients are informed of entry and can opt out. 
 In 2021, 69 of 76 Swedish hospitals enrolled patients in SwedeHF, which had a 32% coverage of the prevalent HF population in Sweden[@annualreport]. 
 
 SwedeHF was linked with national Swedish registries (SHFDB v 4.1.0) through the 
@@ -82,17 +80,13 @@ Swedish personal identity number (PIN)[@pin]:
 additional comorbidities and outcomes
 - The Cause of Death Register (The National Board of Health and Welfare) for outcomes 
 death
-- LISA[@lisa] and the Register of the Total Population (Statistics Sweden) for 
+- Longitudinal integrated database for health insurance and labour market studies (LISA)[@lisa] and the Register of the Total Population (Statistics Sweden) for 
 socio-economic factors
 
-## Acknowledgments
-
-Please include "We thank all staff members at all care units in Sweden for their contribution to the SwedeHF register." 
-in the Acknowledgements of any resulting articles. 
-
-## Ethics
+## Ethics and Informed consent
 
 The study was approved by the Swedish Ethical Review Authority, dnr 2021-04326. 
+Individual consent was not required, but patients were informed of entry into SwedeHF and able to opt‐out.
 
 \newpage
 
@@ -107,32 +101,48 @@ default_kable(flow) %>%
 
 ## Definitions
 
-Information on data sources, definitions etc. are found https://kiheartfailure.github.io/shfdb4/.
-
 {{< include src/vars.qmd >}}
+
+More information on data sources, definitions etc. are found https://kiheartfailure.github.io/shfdb4/.
 
 # Statistical analysis 
 
 ## General
 
 All analyses were performed using `r sessionInfo()$R.version$version.string` [@r]. 
-The level of significance is set to 5%, two-sided. No adjustment for multiple 
-comparisons were made and therefore the results should be viewed with care.
+The level of significance is set to 5%, two-sided. 
 
 ## Baseline characteristics
 
-Baseline characteristics are presented and categorical variables are presented with n and percentage whereas 
-continuous variables are presented with median [first quartile-third quartile] 
+Categorical variables are presented with n and percentage whereas 
+continuous variables are presented with median [first quartile-third quartile]. 
 
 ## Outcomes
 
-The following outcomes are considered: `r paste0(outvars$name, collapse = ", ")`
+The following outcomes are considered: 
 
-Number of events, person-years and the incidence rate (95% CI) are presented. 
+- `r paste0(outvars$name[1], " (", outvars$shortname[1], ")")`
+- `r paste0(outvars$name[2], " (", outvars$shortname[2], ")")`
+- `r paste0(outvars$name[3], " (", outvars$shortname[3], ")")`
+- `r paste0(outvars$name[4], " (", outvars$shortname[4], ")")`
+- `r paste0(outvars$name[5], " (", outvars$shortname[5], ")")`
+- `r paste0(outvars$name[6], " (", outvars$shortname[6], ")")`
+- `r paste0(outvars$name[7], " (", outvars$shortname[7], ")")`
+- `r paste0(outvars$name[8], " (", outvars$shortname[8], ")")`
+- `r paste0(outvars$name[9], " (", outvars$shortname[9], ")")`
+- `r paste0(outvars$name[10], " (", outvars$shortname[10], ")")`
+- `r paste0(outvars$name[11], " (", outvars$shortname[11], ")")`
+- `r paste0(outvars$name[12], " (", outvars$shortname[12], ")")`
+- `r paste0(outvars$name[13], " (", outvars$shortname[13], ")")`
+- `r paste0(outvars$name[14], " (", outvars$shortname[14], ")")`
+- `r paste0(outvars$name[15], " (", outvars$shortname[15], ")")`
+- `r paste0(outvars$name[16], " (", outvars$shortname[16], ")")`
+- `r paste0(outvars$name[17], " (", outvars$shortname[17], ")")`
+
+
+Number of events, person-years (py) and the incidence rate (95% CI) are presented. 
 
 Data were censored at `r global_followup` years, 2021-12-31, emigration from Sweden or, when it was itself not an event, death. 
-
-\clearpage
 
 # Results
 
