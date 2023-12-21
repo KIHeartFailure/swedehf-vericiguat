@@ -144,11 +144,15 @@ Number of events, person-years (py) and the incidence rate (95% CI) are presente
 
 Data were censored at `r global_followup` years, 2021-12-31, emigration from Sweden or, when it was itself not an event, death. 
 
+\clearpage
+
 # Results
 
 ## Baseline characteristics
 
 {{< include src/base_tab.qmd >}}
+
+\clearpage
 
 ## Outcomes
 

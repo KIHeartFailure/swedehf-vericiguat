@@ -60,11 +60,51 @@ for (i in seq_along(outvars$var)) {
   }
 }
 
-colnames(outall) <- c("Outcome", "No events / sum py / events/100py (95% CI)")
+out <- rsdata %>%
+  count(sos_out_counthosphf_cat) %>%
+  mutate(
+    p = fn(n / sum(n) * 100, 1),
+    incidence = paste0(n, " (", p, ")"),
+    outcome = paste0("  ", sos_out_counthosphf_cat)
+  ) %>%
+  select(outcome, incidence)
+out <- add_row(out,
+  outcome = "No HF hospitalization",
+  .before = 1
+)
+out <- add_row(out,
+  incidence = "n (%)",
+  .before = 1
+)
+
+outall <- bind_rows(outall, out) %>%
+  mutate(
+    outcome = sanitize_text(outcome),
+    incidence = sanitize_text(incidence),
+    outcome = if_else(str_detect(outcome, "No HF"), paste0(outcome, footnote_marker_alphabet(1, format = "latex")), outcome)
+  )
+
+colnames(outall) <- sanitize_text(c("Outcome", "No events / sum py / events/100py (95% CI)"))
+
+indent_rows <- outall %>%
+  mutate(
+    indent_rows = str_detect(Outcome, "  "),
+    rows = row_number()
+  ) %>%
+  filter(indent_rows) %>%
+  pull(rows)
 
 make_one_xlsxsheet(outall)
 
 default_kable(outall,
   align = c("l", rep("c", ncol(outall) - 1)),
-)
+  escape = FALSE
+) %>%
+  add_indent(indent_rows) %>%
+  row_spec(17:18, hline_after = TRUE) %>%
+  # hline.after=c(0,12,13) %>%
+  footnote(
+    alphabet = "Interpret with care since patients have different follow-up times",
+    threeparttable = T
+  )
 ```
