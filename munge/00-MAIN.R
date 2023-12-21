@@ -9,7 +9,7 @@ load(here(shfdbpath, "data/v410/rsdata410.RData"))
 # Meta data ect -----------------------------------------------------------
 
 metavars <- read.xlsx(here(shfdbpath, "metadata/meta_variables.xlsx"))
-load(here(paste0(shfdbpath, "data/meta_statreport.RData")))
+load(here(paste0(shfdbpath, "data/v410/meta_statreport.RData")))
 
 # Munge data --------------------------------------------------------------
 

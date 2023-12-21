@@ -18,6 +18,14 @@ rsdata <- rsdata %>%
   mutate(nmed = rowSums(across(c("shf_rasiarni", "shf_bbl", "shf_mra", "shf_sglt2"), asnum))) %>%
   mutate(
     censdtm = pmin(censdtm, shf_indexdtm + global_followup * 365.25, na.rm = T),
+    sos_out_counthosphf_cat = factor(
+      case_when(
+        sos_out_counthosphf > 4 ~ 5,
+        TRUE ~ sos_out_counthosphf
+      ),
+      levels = 0:5,
+      labels = c("0", "1", "2", "3", "4", ">4")
+    ),
     shf_ef = droplevels(shf_ef),
     shf_age_cat = factor(
       case_when(

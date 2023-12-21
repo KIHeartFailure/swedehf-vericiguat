@@ -150,6 +150,8 @@ Data were censored at `r global_followup` years, 2021-12-31, emigration from Swe
 
 {{< include src/base_tab.qmd >}}
 
+\clearpage
+
 ## Outcomes
 
 ```{r}
